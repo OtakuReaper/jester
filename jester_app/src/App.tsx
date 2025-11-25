@@ -1,5 +1,6 @@
 // import axios from "axios"
 import { useEffect, useState } from "react"
+import { createBrowserRouter, RouterProvider } from "react-router-dom";
 
 //TODO: refactor into separate files
 interface budgetType {
@@ -79,11 +80,26 @@ function App() {
     
   },[budgets, entries])
 
+  const router = createBrowserRouter([
+    {
+      path: "/",
+      element: <PrivateLayout/>,
+      children: [
+        {
+          path: "/",
+          element: <Home />,
+        }
+      ],
+    }
+  ])
+
   return (
     <div style={{
       display: "flex",
       flexDirection: "column",
     }}>  
+
+    <RouterProvider router={router}/>
       <div>
         <h1>Jester</h1>
         <nav style={{
