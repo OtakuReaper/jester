@@ -80,26 +80,31 @@ function App() {
   },[budgets, entries])
 
   return (
-    <>  
-      <div style={{
-        display: "flex",
-        justifyContent: "start",
-        alignItems: "center",
-        backgroundColor: "var(--secondary-bg)",
-        border: 0,
-        margin: 0,
-        padding: 0,
-      }}>
+    <div style={{
+      display: "flex",
+      flexDirection: "column",
+    }}>  
+      <div>
         <h1>Jester</h1>
+        <nav style={{
+          display: "flex",
+          flexDirection: "column",
+        }}>
+          <a href="#">Home</a>
+          <a href="#">Budgets</a>
+          <a href="#">Reports</a>
+        </nav>
       </div>
 
       <h1>Budget Overview</h1>
       <table>
         <thead>
-          <th>Budget</th>
-          <th>Allocated</th>
-          <th>Spent</th>
-          <th>Remaining</th>
+          <tr>
+            <th style={{textAlign: "left"}}>Budget</th>
+            <th style={{textAlign: "left"}}>Allocated</th>
+            <th style={{textAlign: "left"}}>Spent</th>
+            <th style={{textAlign: "left"}}>Remaining</th>
+          </tr>
         </thead>
         <tbody>
           {budgets.map((budget) => {
@@ -122,6 +127,34 @@ function App() {
           </tr>
         </tfoot>
       </table>
+
+      <div>
+        <h2>Budget Re-allocation</h2>
+        <label>Amount:</label>
+        <input type="number" name="reallocation-amount" step="0.01" />
+        <br/>
+        <label>From Budget:</label>
+        <select name="from-budget">
+          {budgets.map((budget) => {
+            return (
+              <option key={budget.id.toString()} value={budget.id.toString()}>{budget.name}</option>
+            )
+          })}
+        </select>
+        <p>put new budget amount here</p>
+        <br/>
+        <label>To Budget:</label>
+        <select name="to-budget">
+          {budgets.map((budget) => {
+            return (
+              <option key={budget.id.toString()} value={budget.id.toString()}>{budget.name}</option>
+            )
+          })}
+        </select>
+        <p>put new budget amount here</p>
+        <br/>
+        <button type="button">Re-allocate</button>
+      </div>
 
       <br/>
 
@@ -171,7 +204,7 @@ function App() {
         <button type="submit">Add Entry</button>
       </form>
 
-    </>
+    </div>
   )
 }
 

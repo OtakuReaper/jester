@@ -1,6 +1,19 @@
 :root {
   --main-bg: #cee6c7;
   --secondary-bg: #2e4b35;
+  
+  --white: #ffffff;
+  --main-text: #e8f5e4;
 
   background-color: var(--main-bg);
+
+  margin: 0;
+  padding: 0;
+  border: 0;
+}
+
+body {
+  margin: 0;
+  padding: 0;
+  border: 0;
 }
