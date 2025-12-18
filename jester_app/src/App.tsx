@@ -1,22 +1,9 @@
-// import axios from "axios"
-import { createBrowserRouter, RouterProvider } from "react-router-dom";
-import PrivateLayout from "./components/layouts/private";
-import Home from "./modules/home";
-
-const router = createBrowserRouter([
-    {
-      path: "/",
-      element: <PrivateLayout/>,
-      children: [
-        {
-          path: "/",
-          element: <Home />,
-        }
-      ],
-    }
-  ])
+import { RouterProvider } from 'react-router-dom'
+import './App.css'
+import { router } from './router'
 
 function App() {
+
   return (
     <RouterProvider router={router}/>
   )

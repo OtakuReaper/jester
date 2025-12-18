@@ -1,0 +1,100 @@
+package main
+
+import (
+	"log"
+	"net/http"
+	"time"
+	"encoding/json"
+	"fmt"
+)
+
+type Response struct {
+	Message string `json:"message"`
+	Status  string `json:"status"`
+}
+
+//Middleware 
+func loggingMiddleware(next http.Handler) http.Handler {
+	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		start := time.Now()
+		log.Printf("%s %s from %s", r.Method, r.URL.Path, r.RemoteAddr)
+		next.ServeHTTP(w, r)
+		log.Printf("Completed in %v", time.Since(start))
+	})
+}
+
+func corsMiddleware(next http.Handler) http.Handler {
+	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		// Set CORS headers
+		w.Header().Set("Access-Control-Allow-Origin", "localhost:5173")
+		w.Header().Set("Access-Control-Allow-Methods", "GET, POST, PATCH, OPTIONS")
+		w.Header().Set("Access-Control-Allow-Headers", "Content-Type, Authorization")
+		w.Header().Set("Access-Control-Max-Age", "86400")
+
+		// Handle preflight requests
+        if r.Method == http.MethodOptions {
+            w.WriteHeader(http.StatusOK)
+            return
+        }
+
+        next.ServeHTTP(w, r)
+	})
+}
+
+//Handlers
+func healthHandler(w http.ResponseWriter, r *http.Request) {
+	w.Header().Set("Content-Type", "application/json")
+	response := Response{
+		Message: "Jester API is healthy",
+		Status:  "ok",
+	}
+	json.NewEncoder(w).Encode(response)
+}
+
+func helloHandler(w http.ResponseWriter, r *http.Request) {
+	w.Header().Set("Content-Type", "application/json")
+
+	//ensuring that it's a GET request
+	if r.Method != http.MethodGet {
+		http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
+		return
+	}
+
+	//preparing the response
+	response := Response{
+		Message: "Hello, welcome to Jester API!",
+		Status:  "ok",
+	}
+	json.NewEncoder(w).Encode(response)
+}
+
+func gettingDataHandler(w http.ResponseWriter, r *http.Request) {
+	w.Header().Set("Content-Type", "application/json")
+
+	//ensuring that it's a POST request
+	if r.Method != http.MethodPost {
+		http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
+		return
+	}
+
+	var requestData map[string]interface{}
+	if err := json.NewDecoder(r.Body).Decode(&requestData); err != nil {
+		http.Error(w, "Invalid JSON", http.StatusBadRequest)
+		return
+	}
+
+	data := requestData["data"]
+	if data == nil {
+		http.Error(w, "'data' field is required", http.StatusBadRequest)
+		return
+	}
+
+	log.Printf("Received data: %v", data)
+
+	//preparing the response
+	response := Response{
+		Message: fmt.Sprintf("%v", data),
+		Status:  "ok",
+	}
+	json.NewEncoder(w).Encode(response)
+}
