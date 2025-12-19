@@ -23,8 +23,10 @@ func main() {
 	// registering handlers with logging middleware
 	mux.Handle("/", http.HandlerFunc(healthHandler))
 	mux.Handle("/health", http.HandlerFunc(healthHandler))
-	mux.Handle("/api/hello", http.HandlerFunc(helloHandler))
-	mux.Handle("/api/data", http.HandlerFunc(gettingDataHandler))
+	mux.Handle("/hello", http.HandlerFunc(helloHandler))
+	mux.Handle("/data", http.HandlerFunc(gettingDataHandler))
+
+	mux.Handle("/login", http.HandlerFunc(loginHandler)) //TODO: add stronger auth handling
 
 
 	log.Printf("Starting Jester API server on port %s...", port)

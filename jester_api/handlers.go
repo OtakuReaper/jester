@@ -26,7 +26,7 @@ func loggingMiddleware(next http.Handler) http.Handler {
 func corsMiddleware(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		// Set CORS headers
-		w.Header().Set("Access-Control-Allow-Origin", "localhost:5173")
+		w.Header().Set("Access-Control-Allow-Origin", "http://localhost:5173")
 		w.Header().Set("Access-Control-Allow-Methods", "GET, POST, PATCH, OPTIONS")
 		w.Header().Set("Access-Control-Allow-Headers", "Content-Type, Authorization")
 		w.Header().Set("Access-Control-Max-Age", "86400")
@@ -77,6 +77,7 @@ func gettingDataHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	//parsing the request body
 	var requestData map[string]interface{}
 	if err := json.NewDecoder(r.Body).Decode(&requestData); err != nil {
 		http.Error(w, "Invalid JSON", http.StatusBadRequest)
@@ -94,6 +95,37 @@ func gettingDataHandler(w http.ResponseWriter, r *http.Request) {
 	//preparing the response
 	response := Response{
 		Message: fmt.Sprintf("%v", data),
+		Status:  "ok",
+	}
+	json.NewEncoder(w).Encode(response)
+}
+
+func loginHandler(w http.ResponseWriter, r *http.Request) {
+	w.Header().Set("Content-Type", "application/json")
+
+	//ensuring that it's a POST request
+	if r.Method != http.MethodPost {
+		http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
+		return
+	}
+
+	//parsing the request body
+	var requestData map[string]interface{}
+	if err := json.NewDecoder(r.Body).Decode(&requestData); err != nil {
+		http.Error(w, "Invalid JSON", http.StatusBadRequest)
+		return
+	}
+
+	//TODO: figure out how to handle input validation
+	username := requestData["username"]
+	password := requestData["password"]
+
+	log.Printf("Login attempt for user: %v", username)
+	log.Printf("Password provided: %v", password) //remove this in production!
+
+	//preparing the response
+	response := Response{
+		Message: "Login successful",
 		Status:  "ok",
 	}
 	json.NewEncoder(w).Encode(response)
