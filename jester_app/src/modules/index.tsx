@@ -24,21 +24,30 @@ const DashboardLayout = () => {
         <Layout style={{ minHeight: "100vh" }}>
             <Header style={{
                 display: "flex",
-                "alignItems": "center",
+                alignItems: "center",
+                backgroundColor: "var(--secondary-color)",
             }}>
-                <Typography.Title style={{ color: "white", margin: 0 }} level={3}>Jester</Typography.Title>
-                <Menu
-                    theme="dark" //TODO: figure out how to make this dynamic
+                <Typography.Title style={{ 
+                    color: "white", 
+                    margin: 0, 
+                    textAlign: "center" 
+                    }} level={3}>Jester</Typography.Title>
+                <Menu 
                     mode="horizontal"
                     defaultSelectedKeys={["1"]}
                     items={menuItems}
-                    style={{ flex: 1, minWidth: 0}}
+                    style={{ 
+                        flex: 1, 
+                        minWidth: 0,
+                        backgroundColor: "var(--secondary-color)"
+                    }}
+                    
                 />
             </Header>
-            <Content style={{ flex: 1 }}>
+            <Content style={{ flex: 1, backgroundColor: "var(--primary-color)" }}>
                 <Outlet/>
             </Content>
-            <Footer style={{ textAlign: "center" }}>
+            <Footer style={{ textAlign: "center", backgroundColor: "var(--secondary-color)" }}>
                 Jester - a budget management tool - Studio Clue 2024
             </Footer>
         </Layout>
