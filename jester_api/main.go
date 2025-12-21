@@ -26,7 +26,8 @@ func main() {
 	mux.Handle("/hello", http.HandlerFunc(helloHandler))
 	mux.Handle("/data", http.HandlerFunc(gettingDataHandler))
 
-	mux.Handle("/login", http.HandlerFunc(loginHandler)) //TODO: add stronger auth handling
+	mux.Handle("/auth/login", http.HandlerFunc(loginHandler)) //TODO: add stronger auth handling
+	mux.Handle("/auth/profile", http.HandlerFunc(profileHandler))
 
 
 	log.Printf("Starting Jester API server on port %s...", port)

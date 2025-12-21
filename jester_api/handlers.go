@@ -123,10 +123,49 @@ func loginHandler(w http.ResponseWriter, r *http.Request) {
 	log.Printf("Login attempt for user: %v", username)
 	log.Printf("Password provided: %v", password) //remove this in production!
 
+	//TODO: some logic to verify username and password on the database
+	//TODO: some logic to create a session on the database
+
+	//creating a JWT token (dummy token for now) for the response's cookie and body
+	token := "dummy-jwt-token"
+
+	//creating the cookie
+	cookie := &http.Cookie{
+		Name: "auth_token",
+		Value: token,
+		Path: "/",
+		MaxAge: 6 * 60, //6 minutes
+		HttpOnly: true,
+		Secure: false, //set to true in production with HTTPS
+		SameSite: http.SameSiteStrictMode,
+
+	}
+
+	http.SetCookie(w, cookie)
+
 	//preparing the response
-	response := Response{
-		Message: "Login successful",
-		Status:  "ok",
+	response := map[string]interface{}{
+		"message": "Login successful",
+	}
+
+	json.NewEncoder(w).Encode(response)
+}
+
+func profileHandler(w http.ResponseWriter, r *http.Request) {
+	w.Header().Set("Content-Type", "application/json")
+
+	//ensuring that it's a GET request
+	if r.Method != http.MethodGet {
+		http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
+		return
+	}
+
+	//preparing the response
+	response := map[string]interface{}{
+		"id": "someId", //TODO: replace with real user ID
+		"username": "admin", 
+		"status_id": "someId", //TODO: replace with real status ID
+		"email": "admin@example.com", //TODO: replace with real email
 	}
 	json.NewEncoder(w).Encode(response)
 }
