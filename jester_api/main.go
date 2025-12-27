@@ -19,14 +19,14 @@ func main() {
 		IdleTimeout:  60 * time.Second,
 	}
 
-	// registering handlers with logging middleware
+	mux.Handle("/auth/login", http.HandlerFunc(loginHandler)) //TODO: add stronger auth handling
+	mux.Handle("/auth/profile", loggingMiddleware(corsMiddleware(http.HandlerFunc(profileHandler))))
+	mux.Handle("GET /budgets/{id}", loggingMiddleware(corsMiddleware(http.HandlerFunc(getBudgetsHandler))))
+
 	mux.Handle("/", http.HandlerFunc(healthHandler))
 	mux.Handle("/health", http.HandlerFunc(healthHandler))
 	mux.Handle("/hello", http.HandlerFunc(helloHandler))
 	mux.Handle("/data", http.HandlerFunc(gettingDataHandler))
-
-	mux.Handle("/auth/login", http.HandlerFunc(loginHandler)) //TODO: add stronger auth handling
-	mux.Handle("/auth/profile", loggingMiddleware(corsMiddleware(http.HandlerFunc(profileHandler))))
 
 	log.Printf("Starting Jester API server on port %s...", port)
 

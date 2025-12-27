@@ -1,24 +1,59 @@
 import { Button, Col, Row, Table, Typography } from "antd";
+import useAuthenticatedQuery from "../hooks/auth-query";
+import { getBudgets } from "../services/budgets";
+import { useEffect, useState } from "react";
+import { set } from "react-hook-form";
+
+type BudgetDisplay = {
+    key: string,
+    budget: string,
+    allocated: string,
+    spent: string,
+    remaining: string,
+}
+
+type Budget = {
+    id: string,
+    budgetTypeId: string,
+    userId: string,
+    name: string,
+    description: string,
+    colour: string,
+    allocated: number,
+    spent: number,
+    amount: number,
+}
+
 
 const Home = () => {
+    const userId = "1";
 
-    //budgets
-    const budgetData = [
-        {
-            key: '1',
-            budget: 'Pool',
-            allocated: '$500',
-            spent: '$150',
-            remaining: '$350'
-        },
-        {
-            key: '2',
-            budget: 'Land Debt',
-            allocated: '$300',
-            spent: '$200',
-            remaining: '$100'
+    //states
+    const [ budgetData, setBudgetData ] = useState<BudgetDisplay[]>([]);
+
+    // budgets
+    const { data: budgets = [], isLoading: budgetIsLoading } = useAuthenticatedQuery<Budget[]>({
+        queryKey: ["budgets", userId],
+        queryFn: () => getBudgets({ id: userId }),
+    });
+
+    useEffect(() => {
+
+        if(!budgetIsLoading && budgets.length != 0 ) {
+
+            const newFormattedBudgets = budgets.map((budget) => {
+                return {
+                    key: budget.id,
+                    budget: budget.name,
+                    allocated: `$${budget.allocated.toFixed(2)}`,
+                    spent: `$${budget.spent.toFixed(2)}`,
+                    remaining: `$${budget.amount.toFixed(2)}`,
+                }
+            });
+
+            setBudgetData(newFormattedBudgets);
         }
-    ]
+    }, [budgets]);
 
     const budgetColumns = [
         {
