@@ -1,11 +1,11 @@
 package main
 
 import (
+	"encoding/json"
+	"fmt"
 	"log"
 	"net/http"
 	"time"
-	"encoding/json"
-	"fmt"
 )
 
 type Response struct {
@@ -13,7 +13,7 @@ type Response struct {
 	Status  string `json:"status"`
 }
 
-//Middleware 
+// Middleware
 func loggingMiddleware(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		start := time.Now()
@@ -29,19 +29,20 @@ func corsMiddleware(next http.Handler) http.Handler {
 		w.Header().Set("Access-Control-Allow-Origin", "http://localhost:5173")
 		w.Header().Set("Access-Control-Allow-Methods", "GET, POST, PATCH, OPTIONS")
 		w.Header().Set("Access-Control-Allow-Headers", "Content-Type, Authorization")
+		w.Header().Set("Access-Control-Allow-Credentials", "true")
 		w.Header().Set("Access-Control-Max-Age", "86400")
 
 		// Handle preflight requests
-        if r.Method == http.MethodOptions {
-            w.WriteHeader(http.StatusOK)
-            return
-        }
+		if r.Method == http.MethodOptions {
+			w.WriteHeader(http.StatusOK)
+			return
+		}
 
-        next.ServeHTTP(w, r)
+		next.ServeHTTP(w, r)
 	})
 }
 
-//Handlers
+// Handlers
 func healthHandler(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "application/json")
 	response := Response{
@@ -131,14 +132,13 @@ func loginHandler(w http.ResponseWriter, r *http.Request) {
 
 	//creating the cookie
 	cookie := &http.Cookie{
-		Name: "auth_token",
-		Value: token,
-		Path: "/",
-		MaxAge: 6 * 60, //6 minutes
+		Name:     "auth_token",
+		Value:    token,
+		Path:     "/",
+		MaxAge:   6 * 60, //6 minutes
 		HttpOnly: true,
-		Secure: false, //set to true in production with HTTPS
+		Secure:   false, //set to true in production with HTTPS
 		SameSite: http.SameSiteStrictMode,
-
 	}
 
 	http.SetCookie(w, cookie)
@@ -162,10 +162,10 @@ func profileHandler(w http.ResponseWriter, r *http.Request) {
 
 	//preparing the response
 	response := map[string]interface{}{
-		"id": "someId", //TODO: replace with real user ID
-		"username": "admin", 
-		"status_id": "someId", //TODO: replace with real status ID
-		"email": "admin@example.com", //TODO: replace with real email
+		"id":        "someId", //TODO: replace with real user ID
+		"username":  "admin",
+		"status_id": "someId",            //TODO: replace with real status ID
+		"email":     "admin@example.com", //TODO: replace with real email
 	}
 	json.NewEncoder(w).Encode(response)
 }
