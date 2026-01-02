@@ -101,56 +101,6 @@ func gettingDataHandler(w http.ResponseWriter, r *http.Request) {
 	json.NewEncoder(w).Encode(response)
 }
 
-func loginHandler(w http.ResponseWriter, r *http.Request) {
-	w.Header().Set("Content-Type", "application/json")
-
-	//ensuring that it's a POST request
-	if r.Method != http.MethodPost {
-		http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
-		return
-	}
-
-	//parsing the request body
-	var requestData map[string]interface{}
-	if err := json.NewDecoder(r.Body).Decode(&requestData); err != nil {
-		http.Error(w, "Invalid JSON", http.StatusBadRequest)
-		return
-	}
-
-	//TODO: figure out how to handle input validation
-	username := requestData["username"]
-	password := requestData["password"]
-
-	log.Printf("Login attempt for user: %v", username)
-	log.Printf("Password provided: %v", password) //remove this in production!
-
-	//TODO: some logic to verify username and password on the database
-	//TODO: some logic to create a session on the database
-
-	//creating a JWT token (dummy token for now) for the response's cookie and body
-	token := "dummy-jwt-token"
-
-	//creating the cookie
-	cookie := &http.Cookie{
-		Name:     "auth_token",
-		Value:    token,
-		Path:     "/",
-		MaxAge:   6 * 60, //6 minutes
-		HttpOnly: true,
-		Secure:   false, //set to true in production with HTTPS
-		SameSite: http.SameSiteStrictMode,
-	}
-
-	http.SetCookie(w, cookie)
-
-	//preparing the response
-	response := map[string]interface{}{
-		"message": "Login successful",
-	}
-
-	json.NewEncoder(w).Encode(response)
-}
-
 func profileHandler(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "application/json")
 
@@ -159,6 +109,15 @@ func profileHandler(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
 		return
 	}
+
+	//checking for the auth_token cookie
+	token, err := r.Cookie("auth_token")
+	if err != nil || token.Value == "" {
+		http.Error(w, "Unauthorized", http.StatusUnauthorized)
+		return
+	}
+
+	fmt.Println(token)
 
 	//preparing the response
 	response := map[string]interface{}{

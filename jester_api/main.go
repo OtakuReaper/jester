@@ -4,9 +4,12 @@ import (
 	"log"
 	"net/http"
 	"time"
+
+	"jester/handlers"
 )
 
 func main() {
+
 	// creating a new ServeMux aka router
 	mux := http.NewServeMux()
 
@@ -19,9 +22,18 @@ func main() {
 		IdleTimeout:  60 * time.Second,
 	}
 
-	mux.Handle("/auth/login", http.HandlerFunc(loginHandler)) //TODO: add stronger auth handling
-	mux.Handle("/auth/profile", loggingMiddleware(corsMiddleware(http.HandlerFunc(profileHandler))))
-	mux.Handle("GET /budgets/{id}", loggingMiddleware(corsMiddleware(http.HandlerFunc(getBudgetsHandler))))
+	mux.Handle("POST /auth/login", http.HandlerFunc(handlers.LoginHandler)) //TODO: add stronger auth handling
+	mux.Handle("/auth/profile",
+		loggingMiddleware(
+			handlers.AuthMiddleware(
+				http.HandlerFunc(
+					profileHandler))))
+
+	mux.Handle("GET /budgets/{id}",
+		loggingMiddleware(
+			handlers.AuthMiddleware(
+				http.HandlerFunc(
+					getBudgetsHandler))))
 
 	mux.Handle("/", http.HandlerFunc(healthHandler))
 	mux.Handle("/health", http.HandlerFunc(healthHandler))

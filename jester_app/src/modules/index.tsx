@@ -1,9 +1,22 @@
 import { Layout, Menu, Typography } from "antd";
 import { Content, Footer, Header, } from "antd/es/layout/layout";
-import { Outlet } from "react-router-dom"
+import { Outlet, useNavigate } from "react-router-dom"
+import { useAuth } from "../components/context/hook";
+import { useEffect } from "react";
 
 
 const DashboardLayout = () => {
+
+
+    //adding authentication s check
+    const { auth, loading, logoutHandler } = useAuth();
+    const navigate = useNavigate();
+ 
+    useEffect(() => {
+        if (!auth && !loading) {
+            navigate("/auth/login");
+        }
+    },[auth, loading, navigate])
 
 
     //menu items
@@ -19,6 +32,10 @@ const DashboardLayout = () => {
             href: "/budgets"
         }
     ]
+
+    if (loading || !auth) {
+        return <div>Loading...</div>; //TODO: Replace with a proper loading spinner
+    }
 
     return (
         <Layout style={{ minHeight: "100vh" }}>

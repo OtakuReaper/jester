@@ -1,57 +1,43 @@
-import { Button, Card, Col, Row} from 'antd';
-import { useForm } from 'react-hook-form';
-import TextField from '../components/ui/text-field';
-import { useMutation } from "@tanstack/react-query"
-import { login } from '../services/authentication';
-import { useMessageApi } from '../components/context/message';
-import type { MessageInstance } from 'antd/es/message/interface';
-import { useNavigate } from 'react-router-dom';
-
-type LoginValues = {
-    username: string;
-    password: string;
-}
+import { Button, Card, Form, Input} from 'antd';
+import { useEffect, useState } from 'react';
+import { useAuth } from '../components/context/hook';
+import type { Creds } from '../models/auth';
+import { isAxiosError } from 'axios';
+import { UserOutlined, LockOutlined } from "@ant-design/icons";
+import { Link } from 'react-router-dom';
 
 const Login = () => {
 
+    const [ error, setError ] = useState<string | null>(null);
+    const { loginHandler, loginError, loginLoading } = useAuth()
+    const [submitted, setSubmitted ] = useState<boolean>(false);
 
-    //navigation
-    const navigate = useNavigate();
-
-    //form stuff
-    const { control, handleSubmit, formState: { errors } } = useForm<LoginValues>();
-    
-    const messageApi = useMessageApi() as MessageInstance
-    
-    //mutation helpers
-    const handleSuccess = () => {
-        messageApi.success("Login successful!");
-        navigate('/', {replace: true});
+    const onFinish = (values: Creds) => {
+        setSubmitted(true);
+        setError(null);
+        loginHandler(values);
     }
 
-    const handleError = () => {
-        messageApi.error("Something went wrong. Please try again.");
-    }
-    
-    //mutation
-    const { mutate, isPending } = useMutation({
-        mutationFn: login,
-        onSuccess: handleSuccess,
-        onError: handleError,
-    });
+    useEffect(() => {
 
+        if(loginError && submitted) {
+            if(isAxiosError(loginError)){
+                if(loginError.response === undefined) {
+                    setError("Network Error. Please try again.");
+                    return;
+                }
+            }
 
-    //functions
-    const onSubmit = (data: LoginValues) => {
-        
-        const submitData = {
-            username: data.username,
-            password: data.password,
+            if (loginError.response.status === 400){
+                setError("Invalid username or password.");
+                return
+            } 
+                
+            setError("Something went wrong. Please try again.");
         }
-        
-        mutate(submitData);
-    }
 
+    }, [loginError, submitted, setError]);
+    
     return (
         <div
             style={{
@@ -74,46 +60,53 @@ const Login = () => {
                         }}
                     />
                 </div> 
-                <form onSubmit={handleSubmit(onSubmit)}>
-                    <Row gutter={16}>
-                        <Col span={24}>
-                            <TextField
-                                inputProps={{
-                                    placeholder: "Username",
-                                }}
-                                label="Username"
-                                name="username"
-                                rules={{ required: "Username is required" }}
-                                control={control}
-                                error={errors.username?.message as string}
-                            />
-                        </Col>
+                <Form
+                    name="login_form"
+                    initialValues={{ remember: true}}
+                    onFinish={onFinish}
+                >
+                    <Form.Item
+                        name="username"
+                        rules={[{ required: true, message: "Please enter your username!" }]}
+                    >
+                        <Input
+                            prefix={<UserOutlined className="site-form-item-icon" />}
+                            placeholder="Username"
+                            autoComplete="username"
+                        />
+                    </Form.Item>
 
-                        <Col span={24}>
-                            <TextField
-                                inputProps={{
-                                    placeholder: "Password",
-                                }}
-                                label="Password"
-                                name="password"
-                                rules={{ required: "Password is required" }}
-                                control={control}
-                                error={errors.password?.message as string}
-                            />
-                        </Col>
+                    <Form.Item
+                        name="password"
+                        rules={[{ required: true, message: "Please enter your password!" }]}
+                    >
+                        <Input
+                            prefix={<LockOutlined className="site-form-item-icon" />}
+                            type="password"
+                            placeholder="Password"
+                            autoComplete="current-password"
+                        />
+                    </Form.Item>
 
-                        <Col span={24} style={{ textAlign: "center", marginTop: 16 }}>
-                            <Button
-                                type="primary"
-                                htmlType="submit"
-                                style={{ width: '100%' }}
-                                loading={isPending}
-                            >
-                                Login
-                            </Button>
-                        </Col>
-                    </Row>
-                </form>
+                    <Form.Item>
+                        { !loginLoading && 
+                            <Link className="login-form-forgot " to="../forgot-password" >
+                                Forgot password?
+                            </Link> 
+                        }
+                    </Form.Item>
+                    { error && (
+                    <Form.Item>
+                        <div style={{ color: "red", textAlign: "center" }}>{error}</div>
+                    </Form.Item>
+                    )}
+
+                    <Form.Item>
+                        <Button type="primary" htmlType="submit" style={{ width: "100%" }} loading={loginLoading}>
+                        Log in
+                        </Button>
+                    </Form.Item>
+                </Form>
             </Card>
         </div>
     )

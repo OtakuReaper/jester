@@ -13,6 +13,6 @@ export interface AuthenticationState {
     logoutError: Error | null,
     loginHandler: (creds: Creds) => void,
     loginLoading: boolean,
-    loginError: Error | null,
+    loginError: any,
     refetchAuth: () => void
 }

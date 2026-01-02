@@ -8,7 +8,7 @@ const unsafeInstance = rawAxios.create({
 })
 
 export const login = async (data: Creds) => {
-    const response = await unsafeInstance.post("/auth/login", data);
+    const response = await unsafeInstance.post("/auth/login", data, { withCredentials: true });
     return response.data;
 }
 
@@ -18,6 +18,6 @@ export const logout = async () => {
 }
 
 export const getProfile = async () => {
-    const reponse = await axios.get("/auth/profile", { withCredentials: true });
+    const reponse = await axios.get("/auth/profile");
     return reponse.data;
 }
