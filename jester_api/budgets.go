@@ -71,7 +71,5 @@ func getBudgetsHandler(w http.ResponseWriter, r *http.Request) {
 		Amount:       0.00,
 	})
 
-	//preparing the response
-
 	json.NewEncoder(w).Encode(budgets)
 }

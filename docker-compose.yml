@@ -1,0 +1,19 @@
+services:
+  db:
+    image: postgres:latest
+    container_name: jester_db
+    env_file:
+      - .env
+    ports:
+      - "8001:5432"
+    volumes:
+      - jesterdb_data:/var/lib/postgresql/data
+    networks:
+      - jester_network
+
+volumes:
+  jesterdb_data:
+
+networks:
+  jester_network:
+    driver: bridge

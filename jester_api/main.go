@@ -5,10 +5,27 @@ import (
 	"net/http"
 	"time"
 
+	"jester/database"
 	"jester/handlers"
 )
 
 func main() {
+
+	// database config
+	dbConfig := database.Config{ //TODO: make these env variables
+		Host:     "localhost",
+		Port:     8001,
+		User:     "postgres",
+		Password: "", //TODO: make secure
+		DBName:   "jester_db",
+		SSLMode:  "disable",
+	}
+
+	// connect to database
+	if err := database.Connect(dbConfig); err != nil {
+		log.Fatalf("Failed to connect to database: %v", err)
+	}
+	defer database.Close() //this will close the database connection when main exits
 
 	// creating a new ServeMux aka router
 	mux := http.NewServeMux()
@@ -23,17 +40,8 @@ func main() {
 	}
 
 	mux.Handle("POST /auth/login", http.HandlerFunc(handlers.LoginHandler)) //TODO: add stronger auth handling
-	mux.Handle("/auth/profile",
-		loggingMiddleware(
-			handlers.AuthMiddleware(
-				http.HandlerFunc(
-					profileHandler))))
-
-	mux.Handle("GET /budgets/{id}",
-		loggingMiddleware(
-			handlers.AuthMiddleware(
-				http.HandlerFunc(
-					getBudgetsHandler))))
+	mux.Handle("/auth/profile", loggingMiddleware(handlers.AuthMiddleware(http.HandlerFunc(profileHandler))))
+	mux.Handle("GET /budgets/{id}", loggingMiddleware(handlers.AuthMiddleware(http.HandlerFunc(getBudgetsHandler))))
 
 	mux.Handle("/", http.HandlerFunc(healthHandler))
 	mux.Handle("/health", http.HandlerFunc(healthHandler))

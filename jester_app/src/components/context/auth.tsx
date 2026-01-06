@@ -10,7 +10,6 @@ export function AuthProvider({   children }: {children: React.ReactNode}) {
     //states
     const [auth, setAuth] = useState(null);
     const [loading, setLoading] = useState(true);
-
     const queryClient = useQueryClient();
 
     //queries
