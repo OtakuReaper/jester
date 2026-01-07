@@ -3,21 +3,37 @@ package main
 import (
 	"log"
 	"net/http"
+	"os"
+	"strconv"
 	"time"
 
 	"jester/database"
 	"jester/handlers"
+
+	"github.com/joho/godotenv"
 )
 
 func main() {
 
+	err := godotenv.Load()
+	if err != nil {
+		log.Fatal("Error loading .env file")
+	}
+
+	//variables
+	host := os.Getenv("DB_HOST")
+	databasePort, _ := strconv.Atoi(os.Getenv("DB_PORT"))
+	user := os.Getenv("DB_USER")
+	password := os.Getenv("DB_PASSWORD")
+	dbName := os.Getenv("DB_NAME")
+
 	// database config
 	dbConfig := database.Config{ //TODO: make these env variables
-		Host:     "localhost",
-		Port:     8001,
-		User:     "postgres",
-		Password: "", //TODO: make secure
-		DBName:   "jester_db",
+		Host:     host,
+		Port:     databasePort,
+		User:     user,
+		Password: password,
+		DBName:   dbName,
 		SSLMode:  "disable",
 	}
 
