@@ -32,7 +32,8 @@ func GetBudgetsByUserId(db *sql.DB, userID string) ([]Budget, error) {
 
 	//reading the rows
 	for rows.Next() {
-		var budget Budget
+		budget := Budget{}
+
 		err := rows.Scan(
 			&budget.ID,
 			&budget.UserID,
@@ -42,7 +43,7 @@ func GetBudgetsByUserId(db *sql.DB, userID string) ([]Budget, error) {
 			&budget.Color,
 			&budget.Allocation,
 			&budget.CurrentAmount,
-			budget.CreatedAt,
+			&budget.CreatedAt,
 			&budget.UpdatedAt,
 			&budget.CreatedBy,
 			&budget.UpdatedBy,

@@ -2,14 +2,11 @@ import { Button, Col, Row, Table, Typography } from "antd";
 import useAuthenticatedQuery from "../hooks/auth-query";
 import { getBudgets } from "../services/budgets";
 import { useEffect, useState } from "react";
-import { set } from "react-hook-form";
 
 type BudgetDisplay = {
     key: string,
     budget: string,
-    allocated: string,
-    spent: string,
-    remaining: string,
+    current_amount: string,
 }
 
 type Budget = {
@@ -19,9 +16,9 @@ type Budget = {
     name: string,
     description: string,
     colour: string,
-    allocated: number,
+    allocation: number,
     spent: number,
-    amount: number,
+    current_amount: number,
 }
 
 
@@ -43,12 +40,13 @@ const Home = () => {
         if(!budgetIsLoading && budgets.length != 0 ) {
 
             const newFormattedBudgets = budgets.map((budget) => {
+
+                const curr = budget.current_amount.toFixed(2);
+
                 return {
                     key: budget.id,
                     budget: budget.name,
-                    allocated: `$${budget.allocated.toFixed(2)}`,
-                    spent: `$${budget.spent.toFixed(2)}`,
-                    remaining: `$${budget.amount.toFixed(2)}`,
+                    current_amount: `$${curr}`,
                 }
             });
 
@@ -63,19 +61,10 @@ const Home = () => {
             key: 'budget',
         },
         {
-            title: 'Allocated',
-            dataIndex: 'allocated',
-            key: 'allocated',
-        },
-        {
-            title: 'Spent',
-            dataIndex: 'spent',
-            key: 'spent',
-        },
-        {
             title: 'Remaining',
-            dataIndex: 'remaining',
-            key: 'remaining',
+            dataIndex: 'current_amount',
+            key: 'current_amount',
+            render: (text: string) => <span style={{color: Number(text.replace('$', '')) <= 0 ? 'red' : 'black' }}>{text}</span>,
         }
     ]
 
