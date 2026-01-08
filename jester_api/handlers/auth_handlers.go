@@ -12,8 +12,7 @@ import (
 	"jester/security"
 )
 
-//middleware and handlers for authentication
-
+// middleware and handlers for authentication
 func AuthMiddleware(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 

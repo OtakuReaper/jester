@@ -15,25 +15,22 @@ import (
 
 func main() {
 
+	//Loading the Env variales from .env file
 	err := godotenv.Load()
 	if err != nil {
 		log.Fatal("Error loading .env file")
 	}
 
-	//variables
-	host := os.Getenv("DB_HOST")
+	//converting port from string to int
 	databasePort, _ := strconv.Atoi(os.Getenv("DB_PORT"))
-	user := os.Getenv("DB_USER")
-	password := os.Getenv("DB_PASSWORD")
-	dbName := os.Getenv("DB_NAME")
 
-	// database config
-	dbConfig := database.Config{ //TODO: make these env variables
-		Host:     host,
+	// configuring database connection
+	dbConfig := database.Config{
+		Host:     os.Getenv("DB_HOST"),
 		Port:     databasePort,
-		User:     user,
-		Password: password,
-		DBName:   dbName,
+		User:     os.Getenv("DB_USER"),
+		Password: os.Getenv("DB_PASSWORD"),
+		DBName:   os.Getenv("DB_NAME"),
 		SSLMode:  "disable",
 	}
 
@@ -41,32 +38,26 @@ func main() {
 	if err := database.Connect(dbConfig); err != nil {
 		log.Fatalf("Failed to connect to database: %v", err)
 	}
-	defer database.Close() //this will close the database connection when main exits
+
+	//this will close the database connection when main exits
+	defer database.Close()
 
 	// creating a new ServeMux aka router
 	mux := http.NewServeMux()
 
-	port := "8080"
+	port := "8080" //TODO: get from env variable
 	server := &http.Server{
 		Addr:         ":" + port,
-		Handler:      corsMiddleware(mux),
+		Handler:      handlers.CorsMiddleware(mux),
 		ReadTimeout:  15 * time.Second,
 		WriteTimeout: 15 * time.Second,
 		IdleTimeout:  60 * time.Second,
 	}
 
-	mux.Handle("POST /auth/login", http.HandlerFunc(handlers.LoginHandler)) //TODO: add stronger auth handling
-	mux.Handle("/auth/profile", loggingMiddleware(handlers.AuthMiddleware(http.HandlerFunc(profileHandler))))
-	mux.Handle("GET /budgets/{id}", loggingMiddleware(handlers.AuthMiddleware(http.HandlerFunc(getBudgetsHandler))))
-
-	mux.Handle("/", http.HandlerFunc(healthHandler))
-	mux.Handle("/health", http.HandlerFunc(healthHandler))
-	mux.Handle("/hello", http.HandlerFunc(helloHandler))
-	mux.Handle("/data", http.HandlerFunc(gettingDataHandler))
-
-	log.Printf("Starting Jester API server on port %s...", port)
+	AddRoutes(mux)
 
 	// Start server
+	log.Printf("Starting Jester API server on port %s...", port)
 	if err := server.ListenAndServe(); err != nil {
 		log.Fatalf("Server failed to start: %v", err)
 	}

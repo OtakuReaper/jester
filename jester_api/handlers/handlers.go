@@ -1,4 +1,4 @@
-package main
+package handlers
 
 import (
 	"encoding/json"
@@ -14,7 +14,7 @@ type Response struct {
 }
 
 // Middleware
-func loggingMiddleware(next http.Handler) http.Handler {
+func LoggingMiddleware(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		start := time.Now()
 		log.Printf("%s %s from %s", r.Method, r.URL.Path, r.RemoteAddr)
@@ -23,7 +23,7 @@ func loggingMiddleware(next http.Handler) http.Handler {
 	})
 }
 
-func corsMiddleware(next http.Handler) http.Handler {
+func CorsMiddleware(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		// Set CORS headers
 		w.Header().Set("Access-Control-Allow-Origin", "http://localhost:5173")
@@ -43,7 +43,7 @@ func corsMiddleware(next http.Handler) http.Handler {
 }
 
 // Handlers
-func healthHandler(w http.ResponseWriter, r *http.Request) {
+func HealthHandler(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "application/json")
 	response := Response{
 		Message: "Jester API is healthy",
@@ -52,7 +52,7 @@ func healthHandler(w http.ResponseWriter, r *http.Request) {
 	json.NewEncoder(w).Encode(response)
 }
 
-func helloHandler(w http.ResponseWriter, r *http.Request) {
+func HelloHandler(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "application/json")
 
 	//ensuring that it's a GET request
@@ -69,7 +69,7 @@ func helloHandler(w http.ResponseWriter, r *http.Request) {
 	json.NewEncoder(w).Encode(response)
 }
 
-func gettingDataHandler(w http.ResponseWriter, r *http.Request) {
+func GettingDataHandler(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "application/json")
 
 	//ensuring that it's a POST request
@@ -101,7 +101,7 @@ func gettingDataHandler(w http.ResponseWriter, r *http.Request) {
 	json.NewEncoder(w).Encode(response)
 }
 
-func profileHandler(w http.ResponseWriter, r *http.Request) {
+func ProfileHandler(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "application/json")
 
 	//ensuring that it's a GET request
