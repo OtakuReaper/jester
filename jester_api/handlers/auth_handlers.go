@@ -6,6 +6,10 @@ import (
 	"log"
 	"net/http"
 	"time"
+
+	"jester/database"
+	"jester/models"
+	"jester/security"
 )
 
 //middleware and handlers for authentication
@@ -53,10 +57,32 @@ func LoginHandler(w http.ResponseWriter, r *http.Request) {
 	username := requestData["username"]
 	password := requestData["password"]
 
+	//checking on the database for the login request's account
+
 	log.Printf("Login attempt for user: %v", username)
 	log.Printf("Password provided: %v", password) //remove this in production!
 
 	//TODO: some logic to verify username and password on the database
+
+	newUser := models.User{}
+	user := &newUser
+
+	//fetching user from database
+	user, err := models.GetUserByUsername(database.DB, username.(string))
+	if err != nil {
+		http.Error(w, "Error fetching user from database", http.StatusInternalServerError)
+		return
+	}
+
+	//checking the password
+	err = security.VerifyPassword(user.PasswordHash, password.(string))
+	if err != nil {
+		http.Error(w, "Invalid username or password", http.StatusUnauthorized)
+		return
+	}
+
+	fmt.Println("Fetched User from Database")
+
 	//TODO: some logic to create a session on the database
 
 	//creating a JWT token (dummy token for now) for the response's cookie and body

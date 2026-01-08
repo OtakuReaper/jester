@@ -1,8 +1,3 @@
-truncate table if exists entry_types;
-truncate table if exists budget_types;
-truncate table if exists update_types;
-truncate table if exists user_statuses;
-
 drop table if exists budgets;
 drop table if exists entries;
 drop table if exists entry_types;
