@@ -4,6 +4,9 @@ import (
 	"encoding/json"
 	"fmt"
 	"net/http"
+
+	"jester/database"
+	"jester/models"
 )
 
 type BudgetType struct {
@@ -45,31 +48,13 @@ func getBudgetsHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	budgets := []Budget{}
+	budgets := []models.Budget{}
 
-	budgets = append(budgets, Budget{
-		Id:           "1",
-		BudgetTypeId: "1",
-		UserId:       "1",
-		Name:         "Pool",
-		Description:  "Where all money is kept, until allocation",
-		Colour:       "#98ec94ff",
-		Allocated:    271.23,
-		Spent:        161.95,
-		Amount:       109.28,
-	})
-
-	budgets = append(budgets, Budget{
-		Id:           "2",
-		BudgetTypeId: "2",
-		UserId:       "1",
-		Name:         "Land Debt",
-		Description:  "For paying off the land loan",
-		Colour:       "#ef8888ff",
-		Allocated:    500.00,
-		Spent:        500.00,
-		Amount:       0.00,
-	})
+	budgets, err := models.GetBudgetsByUserId(database.DB, userId)
+	if err != nil {
+		http.Error(w, "Error retrieving budgets: "+err.Error(), http.StatusInternalServerError)
+		return
+	}
 
 	json.NewEncoder(w).Encode(budgets)
 }

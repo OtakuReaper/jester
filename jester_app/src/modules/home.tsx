@@ -26,7 +26,8 @@ type Budget = {
 
 
 const Home = () => {
-    const userId = "1";
+    
+    const userId = '71c81dc9-4c6b-4ecc-b676-4b5ce33066f4'
 
     //states
     const [ budgetData, setBudgetData ] = useState<BudgetDisplay[]>([]);
