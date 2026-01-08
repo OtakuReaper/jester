@@ -5,3 +5,7 @@ export const getBudgets = async ({id}: {id: string}) => {
     return response.data;    
 }
 
+export const getEntries = async ({id}: {id: string}) => {
+    const response = await axios.get("/entries/" + id);
+    return response.data;
+}

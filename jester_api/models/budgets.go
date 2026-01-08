@@ -10,6 +10,7 @@ type Budget struct {
 	ID            string         `db:"id" json:"id"`
 	UserID        string         `db:"user_id" json:"user_id"`
 	BudgetTypeID  string         `db:"budget_type_id" json:"budget_type_id"`
+	PeriodID      sql.NullString `db:"period_id" json:"period_id,omitempty"`
 	Name          string         `db:"name" json:"name"`
 	Description   string         `db:"description" json:"description"`
 	Color         string         `db:"color" json:"color"`
@@ -38,6 +39,7 @@ func GetBudgetsByUserId(db *sql.DB, userID string) ([]Budget, error) {
 			&budget.ID,
 			&budget.UserID,
 			&budget.BudgetTypeID,
+			&budget.PeriodID,
 			&budget.Name,
 			&budget.Description,
 			&budget.Color,

@@ -1,6 +1,6 @@
-import { Button, Col, Row, Table, Typography } from "antd";
+import { Button, Col, Modal, Row, Table, Typography } from "antd";
 import useAuthenticatedQuery from "../hooks/auth-query";
-import { getBudgets } from "../services/budgets";
+import { getBudgets, getEntries } from "../services/budgets";
 import { useEffect, useState } from "react";
 
 type BudgetDisplay = {
@@ -21,13 +21,19 @@ type Budget = {
     current_amount: number,
 }
 
+type Entries = {
+
+}
 
 const Home = () => {
     
-    const userId = '71c81dc9-4c6b-4ecc-b676-4b5ce33066f4'
+    const userId = '4cc85064-a411-4d01-9dda-0adb2d8a1b52'
 
     //states
     const [ budgetData, setBudgetData ] = useState<BudgetDisplay[]>([]);
+    const [ entryData, setEntryData ] = useState<Entries[]>([]);
+
+    const [ openEntryModal, setOpenEntryModal ] = useState<boolean>(false);
 
     // budgets
     const { data: budgets = [], isLoading: budgetIsLoading } = useAuthenticatedQuery<Budget[]>({
@@ -35,6 +41,26 @@ const Home = () => {
         queryFn: () => getBudgets({ id: userId }),
     });
 
+    const { data: entries = [], isLoading: entriesIsLoading } = useAuthenticatedQuery<Entries[]>({
+        queryKey: ["entries", userId],
+        queryFn: () => getEntries({ id: userId}),
+    });
+
+
+    //functions
+    const openAddEntryModal = () => {
+        setOpenEntryModal(true);
+    }
+
+    const handleCancelEntry = () => {
+        setOpenEntryModal(false);
+    }
+
+    const handleNewEntry = () => {
+        //TODO: add mutation logic here
+    }
+
+    //rendering
     useEffect(() => {
 
         if(!budgetIsLoading && budgets.length != 0 ) {
@@ -52,7 +78,12 @@ const Home = () => {
 
             setBudgetData(newFormattedBudgets);
         }
-    }, [budgets]);
+
+        if(!entriesIsLoading && entries.length != 0 ) {
+            setEntryData(entries);    
+        }
+
+    }, [budgetIsLoading, entriesIsLoading]);
 
     const budgetColumns = [
         {
@@ -67,25 +98,6 @@ const Home = () => {
             render: (text: string) => <span style={{color: Number(text.replace('$', '')) <= 0 ? 'red' : 'black' }}>{text}</span>,
         }
     ]
-
-    const entriesData = [
-        {
-            key: '1',
-            description: "Starting Funds",
-            date: "2025-12-19",
-            amount: "$1209.23",
-            budget: "Pool",
-            type: "Credit",
-        },
-        {
-            key: '2',
-            description: "Land Payment",
-            date: "2025-12-20",
-            amount: "$500.00",
-            budget: "Land Debt",
-            type: "Debit",
-        }
-    ];
 
     const entriesColumns = [
         {
@@ -108,11 +120,11 @@ const Home = () => {
             dataIndex: 'budget',
             key: 'budget',
         },
-        {
-            title: 'Type',
-            dataIndex: 'type',
-            key: 'type',
-        }
+        // {
+        //     title: 'Type',
+        //     dataIndex: 'type',
+        //     key: 'type',
+        // }
     ]
 
 
@@ -134,7 +146,7 @@ const Home = () => {
             <Col xs={24} md={12} lg={16}>
                 <Typography.Title level={4}>Entries</Typography.Title>
                 <Table 
-                dataSource={entriesData} 
+                dataSource={entryData} 
                 columns={entriesColumns} 
                 pagination={false}
                 size={"small"}
@@ -145,11 +157,24 @@ const Home = () => {
                     <Button
                         style={{ marginTop: 10 }}
                         type="primary"
+                        onClick={() => openAddEntryModal()}
                     >
                         Add Entry
                     </Button>
                 </Row>
             </Col>
+
+            <Modal
+                title="Add Entry"
+                open={openEntryModal}
+                onOk={handleNewEntry}
+                confirmLoading={entriesIsLoading}
+                onCancel={handleCancelEntry}
+                okText="ADD ENTRY"
+                cancelText="CANCEL"
+            >
+                <p>Entry form goes here</p>
+            </Modal>
         </Row>
     </>
     );
