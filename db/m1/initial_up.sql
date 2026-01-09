@@ -93,7 +93,8 @@ insert into budget_types (name, description) values
 ('fixed', 'Fixed budget'),
 ('savings', 'Savings budget'),
 ('income', 'Income budget'),
-('debt', 'Debt budget');
+('debt', 'Debt budget'),
+('closed', 'Closed budget');
 
 insert into entry_types (name, description) values
 ('debit', 'Money Spent'),

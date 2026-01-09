@@ -16,6 +16,52 @@ type Entry struct {
 	Amount       float64   `db:"amount" json:"amount"`
 }
 
+type WorkingEntry struct {
+	BudgetID     string    `db:"budget_id" json:"budget_id"`
+	BudgetTypeID string    `db:"budget_type_id" json:"budget_type_id"`
+	PeriodID     string    `db:"period_id" json:"period_id"`
+	Description  string    `db:"description" json:"description"`
+	Date         time.Time `db:"date" json:"date"`
+	Amount       float64   `db:"amount" json:"amount"`
+}
+
+// CREATE
+func CreateEntry(db *sql.DB, newEntry WorkingEntry) (Entry, error) {
+	//inserting the new entry into the database
+	query := `
+		insert into entries (budget_id, budget_type_id, period_id, description, date, amount) values
+		($1, $2, $3, $4, $5, $6)
+		returning id, budget_id, budget_type_id, period_id, description, date, amount
+	`
+
+	entry := Entry{}
+	err := db.QueryRow(
+		query,
+		newEntry.BudgetID,
+		newEntry.BudgetTypeID,
+		newEntry.PeriodID,
+		newEntry.Description,
+		newEntry.Date,
+		newEntry.Amount,
+	).Scan(
+		&entry.ID,
+		&entry.BudgetID,
+		&entry.BudgetTypeID,
+		&entry.PeriodID,
+		&entry.Description,
+		&entry.Date,
+		&entry.Amount,
+	)
+
+	//handling errors
+	if err != nil {
+		return Entry{}, errors.New("error creating entry in database: " + err.Error())
+	}
+
+	return entry, nil
+}
+
+// READ
 func GetCurrentEntriesByUserId(db *sql.DB, userId string) ([]Entry, error) {
 
 	//getting the user's current period
@@ -67,4 +113,64 @@ func GetCurrentEntriesByUserId(db *sql.DB, userId string) ([]Entry, error) {
 	}
 
 	return entries, nil
+}
+
+// UPDATE
+func UpdateEntry(db *sql.DB, entryId string, updatedEntry WorkingEntry) (Entry, error) {
+	//updating the entry in the database
+	query := `
+		update entries
+		set budget_id = coalesce($1, budget_id),
+		    budget_type_id = coalesce($2, budget_type_id),
+		    period_id = coalesce($3, period_id),
+		    description = coalesce($4, description),
+		    date = coalesce($5, date),
+		    amount = coalesce($6, amount)
+		where id = $7
+		returning id, budget_id, budget_type_id, period_id, description, date, amount
+	`
+
+	entry := Entry{}
+	err := db.QueryRow(
+		query,
+		updatedEntry.BudgetID,
+		updatedEntry.BudgetTypeID,
+		updatedEntry.PeriodID,
+		updatedEntry.Description,
+		updatedEntry.Date,
+		updatedEntry.Amount,
+		entryId,
+	).Scan(
+		&entry.ID,
+		&entry.BudgetID,
+		&entry.BudgetTypeID,
+		&entry.PeriodID,
+		&entry.Description,
+		&entry.Date,
+		&entry.Amount,
+	)
+
+	//handling errors
+	if err != nil {
+		return Entry{}, errors.New("error updating entry in database: " + err.Error())
+	}
+
+	return entry, nil
+}
+
+// DELETE
+func DeleteEntryById(db *sql.DB, entryId string) error {
+	//deleting the entry from the database
+	query := `
+		delete from entries where id = $1
+	`
+
+	_, err := db.Exec(query, entryId)
+
+	//handling errors
+	if err != nil {
+		return errors.New("error deleting entry from database: " + err.Error())
+	}
+
+	return nil
 }

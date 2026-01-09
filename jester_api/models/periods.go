@@ -7,12 +7,52 @@ import (
 )
 
 type Period struct {
-	ID        string    `db:"id" json:"id"`
-	UserID    string    `db:"user_id" json:"user_id"`
-	StartDate time.Time `db:"start_date" json:"start_date"`
-	EndDate   time.Time `db:"end_date" json:"end_date"`
+	ID        string        `db:"id" json:"id"`
+	UserID    string        `db:"user_id" json:"user_id"`
+	StartDate time.Time     `db:"start_date" json:"start_date"`
+	EndDate   *sql.NullTime `db:"end_date" json:"end_date,omitempty"`
 }
 
+type NewPeriod struct {
+	UserID    string    `db:"user_id" json:"user_id"`
+	StartDate time.Time `db:"start_date" json:"start_date"`
+}
+
+type UpdatePeriod struct {
+	StartDate *time.Time    `db:"start_date" json:"start_date,omitempty"`
+	EndDate   *sql.NullTime `db:"end_date" json:"end_date,omitempty"`
+}
+
+// CREATE
+func CreatePeriod(db *sql.DB, newPeriod NewPeriod) (Period, error) {
+	//inserting the new period into the database
+	query := `
+		insert into periods (user_id, start_date)
+		values ($1, $2)
+		returning id, user_id, start_date, end_date
+	`
+
+	period := Period{}
+	err := db.QueryRow(
+		query,
+		newPeriod.UserID,
+		newPeriod.StartDate,
+	).Scan(
+		&period.ID,
+		&period.UserID,
+		&period.StartDate,
+		&period.EndDate,
+	)
+
+	//handling errors
+	if err != nil {
+		return Period{}, errors.New("error creating period in database: " + err.Error())
+	}
+
+	return period, nil
+}
+
+// READ
 func GetCurrentPeriodByUserId(db *sql.DB, userId string) (Period, error) {
 
 	//getting the latest period that the user is using
@@ -35,6 +75,38 @@ func GetCurrentPeriodByUserId(db *sql.DB, userId string) (Period, error) {
 
 	if err != nil {
 		return period, errors.New("error fetching period from database: " + err.Error())
+	}
+
+	return period, nil
+}
+
+// UPDATE
+func UpdatePeriodById(db *sql.DB, periodId string, updatedPeriod UpdatePeriod) (Period, error) {
+	//updating the period in the database
+	query := `
+		update periods
+		set start_date = coalesce($1, start_date),
+		    end_date = coalesce($2, end_date)
+		where id = $3
+		returning id, user_id, start_date, end_date
+	`
+
+	period := Period{}
+	err := db.QueryRow(
+		query,
+		updatedPeriod.StartDate,
+		updatedPeriod.EndDate,
+		periodId,
+	).Scan(
+		&period.ID,
+		&period.UserID,
+		&period.StartDate,
+		&period.EndDate,
+	)
+
+	//handling errors
+	if err != nil {
+		return Period{}, errors.New("error updating period in database: " + err.Error())
 	}
 
 	return period, nil
