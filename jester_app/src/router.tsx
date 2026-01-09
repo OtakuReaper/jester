@@ -3,6 +3,7 @@ import Login from "./modules/login";
 import AuthenticationLayout from "./modules/authentication";
 import DashboardLayout from "./modules";
 import Home from "./modules/home";
+import Periods from "./modules/periods";
 
 export const router = createBrowserRouter([
     {
@@ -19,13 +20,7 @@ export const router = createBrowserRouter([
             },
             {
                 path: "/periods",
-                element: <div>Periods Page</div>,
-                children: [
-                    {
-                        path: "new",
-                        element: <div>New Period Page</div>
-                    }
-                ]
+                element: <Periods />
             },
         ]
     },

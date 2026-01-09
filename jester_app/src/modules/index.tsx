@@ -9,7 +9,7 @@ const DashboardLayout = () => {
 
 
     //adding authentication s check
-    const { auth, loading, logoutHandler } = useAuth();
+    const { auth, loading, } = useAuth(); //TODO: implement logout functionality
     const navigate = useNavigate();
  
     useEffect(() => {
