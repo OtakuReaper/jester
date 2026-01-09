@@ -24,12 +24,20 @@ const DashboardLayout = () => {
         {
             key: "1",
             label: "Home",
-            href: "/"
+            href: "/",
+            onClick: () => navigate("/")
         },
         {
             key: "2",
             label: "Budgets",
-            href: "/budgets"
+            href: "/budgets",
+            onClick: () => navigate("/budgets")
+        },
+        {
+            key: "3",
+            label: "Periods",
+            href: "/periods",
+            onClick: () => navigate("/periods")
         }
     ]
 

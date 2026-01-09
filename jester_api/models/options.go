@@ -11,6 +11,12 @@ type EntryType struct {
 	Description string `db:"description" json:"description"`
 }
 
+type BudgetType struct {
+	ID          string `db:"id" json:"id"`
+	Name        string `db:"name" json:"name"`
+	Description string `db:"description" json:"description"`
+}
+
 // READ
 func GetEntryTypes(db *sql.DB) ([]EntryType, error) {
 	query := `
@@ -39,4 +45,33 @@ func GetEntryTypes(db *sql.DB) ([]EntryType, error) {
 	}
 
 	return entryTypes, nil
+}
+
+func GetBudgetTypes(db *sql.DB) ([]BudgetType, error) {
+	query := `
+		select * from budget_types
+	`
+
+	rows, err := db.Query(query)
+	if err != nil {
+		return nil, errors.New("error fetching budget types from database: " + err.Error())
+	}
+	defer rows.Close()
+
+	budgetTypes := []BudgetType{}
+
+	for rows.Next() {
+		var bt BudgetType
+		err := rows.Scan(
+			&bt.ID,
+			&bt.Name,
+			&bt.Description,
+		)
+		if err != nil {
+			return nil, errors.New("error scanning budget type row: " + err.Error())
+		}
+		budgetTypes = append(budgetTypes, bt)
+	}
+
+	return budgetTypes, nil
 }

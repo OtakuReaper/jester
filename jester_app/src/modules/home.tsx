@@ -71,7 +71,7 @@ const Home = () => {
     }
 
     const gotoPeriodSetup = () => {
-        nagivate("/periods/new", { replace: true });
+        nagivate("/periods", { replace: true });
     }
 
     const handleCancelPeriod = () => {

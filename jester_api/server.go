@@ -10,8 +10,11 @@ func AddRoutes(mux *http.ServeMux) {
 
 	mux.Handle("POST /auth/login", http.HandlerFunc(h.LoginHandler)) //TODO: add stronger auth handling
 	mux.Handle("/auth/profile", h.LoggingMiddleware(h.AuthMiddleware(http.HandlerFunc(h.ProfileHandler))))
+
+	//Core Jester Functionality
 	mux.Handle("GET /budgets/{id}", h.LoggingMiddleware(h.AuthMiddleware(http.HandlerFunc(h.GetBudgetsHandler))))
 	mux.Handle("GET /entries/{id}", h.LoggingMiddleware(h.AuthMiddleware(http.HandlerFunc(h.GetEntriesHandler))))
+	mux.Handle("GET /periods/{id}", h.LoggingMiddleware(h.AuthMiddleware(http.HandlerFunc(h.GetPeriodsHandler))))
 
 	mux.Handle("/", http.HandlerFunc(h.HealthHandler))
 	mux.Handle("/health", http.HandlerFunc(h.HealthHandler))
