@@ -3,6 +3,7 @@ import useAuthenticatedQuery from "../hooks/auth-query";
 import { getBudgets, getEntries } from "../services/budgets";
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
+import { useAuth } from "../components/context/hook";
 
 type BudgetDisplay = {
     key: string,
@@ -29,9 +30,11 @@ type Entries = {
 const Home = () => {
     
     //hooks
+    const { auth } = useAuth();
     const nagivate = useNavigate();
 
-    const userId = '481d0814-c110-43fc-99ac-b1c629a45dbd' //TODO: please get this from auth context
+    //setting the user id
+    const userId = auth?.id as string; 
 
     //states
     const [ budgetData, setBudgetData ] = useState<BudgetDisplay[]>([]);

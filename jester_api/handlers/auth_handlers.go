@@ -47,9 +47,6 @@ func LoginHandler(w http.ResponseWriter, r *http.Request) {
 
 	//parsing the ip address from the request
 	ipAdress := r.RemoteAddr
-
-	//some logic to create a session
-
 	log.Printf("Login attempt from IP: %v", ipAdress)
 
 	//TODO: figure out how to handle input validation
@@ -57,12 +54,6 @@ func LoginHandler(w http.ResponseWriter, r *http.Request) {
 	password := requestData["password"]
 
 	//checking on the database for the login request's account
-
-	log.Printf("Login attempt for user: %v", username)
-	log.Printf("Password provided: %v", password) //remove this in production!
-
-	//TODO: some logic to verify username and password on the database
-
 	newUser := models.User{}
 	user := &newUser
 
@@ -76,23 +67,44 @@ func LoginHandler(w http.ResponseWriter, r *http.Request) {
 	//checking the password
 	err = security.VerifyPassword(user.PasswordHash, password.(string))
 	if err != nil {
+		fmt.Println(err.Error())
 		http.Error(w, "Invalid username or password", http.StatusUnauthorized)
 		return
 	}
 
-	fmt.Println("Fetched User from Database")
+	//creating session
+	newSession := models.NewSession{
+		UserId:    user.ID,
+		JwtToken:  "", //initially empty, will be set after JWT generation
+		CreatedAt: time.Now(),
+		ExpiresAt: time.Now().Add(6 * time.Minute), //TODO: change to a more appropriate time
+	}
 
-	//TODO: some logic to create a session on the database
+	sessionID, err := models.CreateSession(database.DB, newSession)
+	if err != nil {
+		http.Error(w, "Error creating session", http.StatusInternalServerError)
+		return
+	}
 
-	//creating a JWT token (dummy token for now) for the response's cookie and body
-	token := "dummy-jwt-token"
+	token, err := security.GenerateJWT(*sessionID, user.ID)
+	if err != nil {
+		http.Error(w, "Error generating JWT", http.StatusInternalServerError)
+		return
+	}
+
+	//updating session with the generated JWT
+	err = models.UpdateSessionsToken(database.DB, *sessionID, token)
+	if err != nil {
+		http.Error(w, "Error updating session", http.StatusInternalServerError)
+		return
+	}
 
 	//creating the cookie
 	cookie := &http.Cookie{
 		Name:     "auth_token",
 		Value:    token,
 		Path:     "/",
-		MaxAge:   6 * 60, //6 minutes
+		MaxAge:   6 * 60, //6 minutes //TODO: change to a more appropriate time
 		Expires:  time.Now().Add(6 * time.Minute),
 		HttpOnly: true,
 		Secure:   false, //set to true in production with HTTPS
@@ -104,11 +116,67 @@ func LoginHandler(w http.ResponseWriter, r *http.Request) {
 	//preparing the response
 	//TODO send back the profile
 	response := map[string]interface{}{
-		"id":        "someId", //TODO: replace with real user ID
-		"username":  "admin",
-		"status_id": "someId",            //TODO: replace with real status ID
-		"email":     "admin@example.com", //TODO: replace with real email
+		"id":        user.ID,
+		"username":  user.Username,
+		"status_id": user.StatusID, //TODO: implement check for status in the future
+		"email":     user.Email,
 	}
 
+	json.NewEncoder(w).Encode(response)
+}
+
+func ProfileHandler(w http.ResponseWriter, r *http.Request) {
+	w.Header().Set("Content-Type", "application/json")
+
+	//ensuring that it's a GET request
+	if r.Method != http.MethodGet {
+		http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
+		return
+	}
+
+	//checking for the auth_token cookie
+	token, err := r.Cookie("auth_token")
+	if err != nil || token.Value == "" {
+		http.Error(w, "Unauthorized", http.StatusUnauthorized)
+		return
+	}
+
+	//validate the token and check the session
+	claims, err := security.ValidateJWT(token.Value)
+	if err != nil {
+		http.Error(w, "Unauthorized: invalid token", http.StatusUnauthorized)
+		return
+	}
+
+	session, err := models.GetSessionById(database.DB, claims.SessionId)
+	if err != nil {
+		http.Error(w, "Error fetching session", http.StatusInternalServerError)
+		return
+	}
+
+	if session == nil {
+		http.Error(w, "Session not found", http.StatusUnauthorized)
+		return
+	}
+
+	//if the session is not expired return the user profile
+	if session.ExpiresAt.Before(time.Now()) {
+		http.Error(w, "Session expired", http.StatusUnauthorized)
+		return
+	}
+
+	user, err := models.GetUserById(database.DB, session.UserId)
+	if err != nil {
+		http.Error(w, "Error fetching user", http.StatusInternalServerError)
+		return
+	}
+
+	//preparing the response
+	response := map[string]interface{}{
+		"id":        user.ID,
+		"username":  user.Username,
+		"status_id": user.StatusID,
+		"email":     user.Email,
+	}
 	json.NewEncoder(w).Encode(response)
 }

@@ -20,6 +20,14 @@ create table if not exists users (
     updated_by     uuid references users(id)
 );
 
+create table if not exists sessions (
+    id            uuid primary key default gen_random_uuid() not null,
+    user_id       uuid references users(id) not null,
+    jwt_token     text not null,
+    created_at    timestamptz default now() not null,
+    expires_at    timestamptz not null
+)
+
 create table if not exists budget_types (
     id              uuid primary key default gen_random_uuid() not null,
     name            varchar(64) not null,

@@ -100,31 +100,3 @@ func GettingDataHandler(w http.ResponseWriter, r *http.Request) {
 	}
 	json.NewEncoder(w).Encode(response)
 }
-
-func ProfileHandler(w http.ResponseWriter, r *http.Request) {
-	w.Header().Set("Content-Type", "application/json")
-
-	//ensuring that it's a GET request
-	if r.Method != http.MethodGet {
-		http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
-		return
-	}
-
-	//checking for the auth_token cookie
-	token, err := r.Cookie("auth_token")
-	if err != nil || token.Value == "" {
-		http.Error(w, "Unauthorized", http.StatusUnauthorized)
-		return
-	}
-
-	fmt.Println(token)
-
-	//preparing the response
-	response := map[string]interface{}{
-		"id":        "someId", //TODO: replace with real user ID
-		"username":  "admin",
-		"status_id": "someId",            //TODO: replace with real status ID
-		"email":     "admin@example.com", //TODO: replace with real email
-	}
-	json.NewEncoder(w).Encode(response)
-}
