@@ -16,14 +16,26 @@ type Entry struct {
 	Amount       float64   `db:"amount" json:"amount"`
 }
 
-func GetCurrentEntriesByUserId(db *sql.DB, userID string) ([]Entry, error) {
+func GetCurrentEntriesByUserId(db *sql.DB, userId string) ([]Entry, error) {
+
+	//getting the user's current period
+	period, err := GetCurrentPeriodByUserId(db, userId)
+	if err != nil {
+		return nil, err
+	}
+
+	//checking if there even is a current period
+	if period.ID == "" {
+		return []Entry{}, nil //no current period, return empty slice
+	}
+
+	//getting the entries for the user's current period
 	query := `
-		select * form entries e
-		where user_id = $1
+		select * from entries where period_id = $1
 	`
 
 	entries := []Entry{}
-	rows, err := db.Query(query, userID)
+	rows, err := db.Query(query, period.ID)
 	defer rows.Close()
 
 	//reading the rows
@@ -47,11 +59,11 @@ func GetCurrentEntriesByUserId(db *sql.DB, userID string) ([]Entry, error) {
 
 	//handling errors
 	if err == sql.ErrNoRows {
-		return nil, nil //no entries found
+		return entries, nil //no entries found
 	}
 
 	if err != nil {
-		return nil, errors.New("error querying entries: " + err.Error())
+		return nil, errors.New("error fetching entries from database: " + err.Error())
 	}
 
 	return entries, nil

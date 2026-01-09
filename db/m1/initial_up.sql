@@ -8,10 +8,12 @@ create table if not exists user_statuses (
 create table if not exists users (
     id              uuid primary key default gen_random_uuid() not null,
     status_id       uuid references user_statuses(id) not null,
+
     username        text unique not null,
-    password_hash   text not null,
     email           text unique not null,
+    password_hash   text not null,
     otp_secret      text,
+
     created_at      timestamptz default now() not null,
     updated_at      timestamptz default now() not null,
     created_by      uuid references users(id),
@@ -28,7 +30,7 @@ create table if not exists periods(
     id             uuid primary key default gen_random_uuid() not null,
     user_id        uuid references users(id) not null,
     start_date     timestamptz not null,
-    end_date       timestamptz not null
+    end_date       timestamptz
 );
 
 create table if not exists entry_types (

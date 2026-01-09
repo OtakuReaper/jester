@@ -23,6 +23,18 @@ type Budget struct {
 }
 
 func GetBudgetsByUserId(db *sql.DB, userID string) ([]Budget, error) {
+
+	//getting the user's current period
+	period, err := GetCurrentPeriodByUserId(db, userID)
+	if err != nil {
+		return nil, err
+	}
+
+	//if there is no current period, return empty slice
+	if period.ID == "" {
+		return []Budget{}, nil
+	}
+
 	query := `
 		select * from budgets where user_id = $1
 	`

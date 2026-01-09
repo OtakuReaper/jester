@@ -2,6 +2,7 @@ import { Button, Col, Modal, Row, Table, Typography } from "antd";
 import useAuthenticatedQuery from "../hooks/auth-query";
 import { getBudgets, getEntries } from "../services/budgets";
 import { useEffect, useState } from "react";
+import { useNavigate } from "react-router-dom";
 
 type BudgetDisplay = {
     key: string,
@@ -27,23 +28,29 @@ type Entries = {
 
 const Home = () => {
     
-    const userId = '4cc85064-a411-4d01-9dda-0adb2d8a1b52'
+    //hooks
+    const nagivate = useNavigate();
+
+    const userId = '481d0814-c110-43fc-99ac-b1c629a45dbd' //TODO: please get this from auth context
 
     //states
     const [ budgetData, setBudgetData ] = useState<BudgetDisplay[]>([]);
     const [ entryData, setEntryData ] = useState<Entries[]>([]);
 
     const [ openEntryModal, setOpenEntryModal ] = useState<boolean>(false);
+    const [ openPeriodModal, setOpenPeriodModal ] = useState<boolean>(false);
 
     // budgets
     const { data: budgets = [], isLoading: budgetIsLoading } = useAuthenticatedQuery<Budget[]>({
         queryKey: ["budgets", userId],
         queryFn: () => getBudgets({ id: userId }),
+        refetchOnWindowFocus: false,
     });
 
     const { data: entries = [], isLoading: entriesIsLoading } = useAuthenticatedQuery<Entries[]>({
         queryKey: ["entries", userId],
         queryFn: () => getEntries({ id: userId}),
+        refetchOnWindowFocus: false,
     });
 
 
@@ -58,6 +65,14 @@ const Home = () => {
 
     const handleNewEntry = () => {
         //TODO: add mutation logic here
+    }
+
+    const gotoPeriodSetup = () => {
+        nagivate("/periods/new", { replace: true });
+    }
+
+    const handleCancelPeriod = () => {
+        setOpenPeriodModal(false);
     }
 
     //rendering
@@ -81,6 +96,10 @@ const Home = () => {
 
         if(!entriesIsLoading && entries.length != 0 ) {
             setEntryData(entries);    
+        }
+
+        if (budgets.length == 0 && entries.length == 0) {
+            setOpenPeriodModal(true);
         }
 
     }, [budgetIsLoading, entriesIsLoading]);
@@ -163,19 +182,30 @@ const Home = () => {
                     </Button>
                 </Row>
             </Col>
+        </Row>
 
-            <Modal
+        <Modal
                 title="Add Entry"
                 open={openEntryModal}
                 onOk={handleNewEntry}
                 confirmLoading={entriesIsLoading}
                 onCancel={handleCancelEntry}
-                okText="ADD ENTRY"
-                cancelText="CANCEL"
+                okText="Add Entry"
+                cancelText="Cancel"
             >
                 <p>Entry form goes here</p>
             </Modal>
-        </Row>
+
+            <Modal
+                title="No Period"
+                open={openPeriodModal}
+                onOk={gotoPeriodSetup}
+                onCancel={handleCancelPeriod}
+                okText="Goto Period Setup"
+                cancelText="Cancel"
+            >
+                <p>You don't have any periods set up. Please set up a period to get started.</p>
+            </Modal>
     </>
     );
 }

@@ -2,6 +2,7 @@ package handlers
 
 import (
 	"encoding/json"
+	"fmt"
 	"net/http"
 
 	"jester/database"
@@ -38,6 +39,8 @@ func GetBudgetsHandler(w http.ResponseWriter, r *http.Request) {
 func GetEntriesHandler(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "application/json")
 
+	fmt.Println("Getting hit!")
+
 	//only allowing GET method
 	if r.Method != http.MethodGet {
 		http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
@@ -52,6 +55,8 @@ func GetEntriesHandler(w http.ResponseWriter, r *http.Request) {
 	}
 
 	entries := []models.Entry{}
+
+	fmt.Println("Failing Here!")
 
 	entries, err := models.GetCurrentEntriesByUserId(database.DB, userId)
 	if err != nil {

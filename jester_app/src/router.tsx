@@ -14,9 +14,19 @@ export const router = createBrowserRouter([
                 element: <Home/>
             },
             {
-                path: "/budgets",
+                path: "/budgets", //TODO: still needs to be implemented
                 element: <div>Budgets Page</div>
-            }
+            },
+            {
+                path: "/periods",
+                element: <div>Periods Page</div>,
+                children: [
+                    {
+                        path: "new",
+                        element: <div>New Period Page</div>
+                    }
+                ]
+            },
         ]
     },
     {

@@ -17,6 +17,7 @@ export function AuthProvider({   children }: {children: React.ReactNode}) {
         queryKey: ['authentication'],
         queryFn: getProfile,
         refetchInterval: auth ? (1000 * 60 * 5) : false, 
+        refetchOnWindowFocus: false,
         retry: false,
     })
 
